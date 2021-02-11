@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "pacientes.h"
+#include "f_hash.h"
 #define CORRECTOR 
 
 #define FACTOR_DE_CARGA 0.7
@@ -13,16 +14,6 @@
 // ******************************************************************
 //                        PROGRAMA PRINCIPAL
 
-/*Funcion de hashing djb2. Fuente: http://www.cse.yorku.ca/~oz/pacientes.html*/
-unsigned long f_hash(const char *str){
-    unsigned long hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
-    return hash;
-}
 
 typedef void (*pacientes_destruir_dato_t)(void *);
 
@@ -51,6 +42,15 @@ campo_pacientes_t *crear_tabla_pacientes(size_t capacidad){
     return tabla;
 }
 
+/*int cmp(campo_pacientes_t* paciente_1, campo_pacientes_t* paciente_2){
+    if (paciente_1->fecha_inscripcion > paciente_2->fecha_inscripcion){
+        return -1;
+    }else if(paciente_1->fecha_inscripcion < paciente_2->fecha_inscripcion){
+        return 1;
+    }
+    return 0;
+}*/
+
 pacientes_t *pacientes_crear(pacientes_destruir_dato_t destruir_dato){
     pacientes_t* pacientes = malloc(sizeof(pacientes_t));
     if(!(pacientes)) return NULL;
@@ -70,7 +70,7 @@ pacientes_t *pacientes_crear(pacientes_destruir_dato_t destruir_dato){
     return pacientes;
 }
 
-bool redimensionar(pacientes_t *pacientes, size_t capacidad){
+bool pacientes_redimensionar(pacientes_t *pacientes, size_t capacidad){
 
     campo_pacientes_t *tabla_ant = pacientes->tabla;
     size_t tam_ant = pacientes->tam; 
@@ -106,7 +106,7 @@ bool redimensionar(pacientes_t *pacientes, size_t capacidad){
 
 bool pacientes_guardar(pacientes_t *pacientes, const char *clave, int *fecha){
     if ((pacientes->cant)*100 / pacientes->tam >= FACTOR_DE_CARGA * 100 ){
-        if(!redimensionar(pacientes, pacientes->tam*2)) return false;
+        if(!pacientes_redimensionar(pacientes, pacientes->tam*2)) return false;
     }
     char* clave_copia = strdup(clave);
     if(!(clave_copia)) return false;

@@ -15,18 +15,16 @@ typedef struct especialidad{
 
 typedef void (*especialidades_destruir_dato_t)(void *);
 
-int cmp(const void* paciente_1, const void* paciente_2){
-    paciente_t* paciente1 = *(paciente_t*)paciente_1;
-    paciente_t* paciente2 = *(paciente_t*)paciente_2;
+/*int cmp(paciente_t* paciente_1, paciente_t* paciente_2){
     if (paciente1->anio_inscripcion > paciente2->anio_inscripcion){
         return -1;
     }else if(paciente1->anio_inscripcion < paciente2->anio_inscripcion){
         return 1;
     }
     return 0;
-}
+}*/
 
-especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_cola, especialidades_destruir_dato_t destruir_heap){
+especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_cola, especialidades_destruir_dato_t destruir_heap, cmp_func_t cmp){
     especialidad_t* especialidad = malloc(sizeof(especialidad_t));
     if(!(especialidad)) return NULL;
     especialidad->cola_urgentes = cola_crear();

@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "especialidades.h"
+#include "f_hash.h"
 #include "cola.h"
 #include "heap.h"
 #define CORRECTOR 
@@ -16,17 +17,6 @@
 
 // ******************************************************************
 //                        PROGRAMA PRINCIPAL
-
-/*Funcion de hashing djb2. Fuente: http://www.cse.yorku.ca/~oz/especialidades.html*/
-unsigned long f_hash(const char *str){
-    unsigned long hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
-    return hash;
-}
 
 typedef void (*especialidades_destruir_dato_t)(void *);
 

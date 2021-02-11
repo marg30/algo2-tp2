@@ -8,6 +8,15 @@ typedef struct paciente{
     int anio_inscripcion;
 }paciente_t;
 
+int cmp(paciente_t* paciente_1, paciente_t* paciente_2){
+    if (paciente_1->anio_inscripcion > paciente_2->anio_inscripcion){
+        return -1;
+    }else if(paciente_1->anio_inscripcion < paciente_2->anio_inscripcion){
+        return 1;
+    }
+    return 0;
+}
+
 paciente_t* paciente_crear(char* nombre, int anio_inscripcion){
     paciente_t* paciente = malloc(sizeof(paciente_t));
     if(!(paciente)) return NULL;

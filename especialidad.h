@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "paciente.h"
+#include "heap.h"
 
 struct especialidad;
 
@@ -10,7 +11,7 @@ typedef void (*especialidades_destruir_dato_t)(void *);
 
 //Crea un puntero a especialidad. Recibe como parametros una funcion de destruccion para pacientes urgentes y otra para no urgentes
 //Post: la estructura especialidad fue inicializada
-especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_urgente, especialidades_destruir_dato_t destruir_no_urgente);
+especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_cola, especialidades_destruir_dato_t destruir_heap, cmp_func_t cmp);
 
 //Destruye la estructura especialidad liberando la memoria pedida
 //Pre: La estructura especialidad fue inicializada

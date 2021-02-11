@@ -19,6 +19,8 @@ void doctor_sumar_atendido(doctor_t* doctor);
 //Pre: La estructura doctor fue inicializada
 int doctor_ver_atendidos(doctor_t* doctor);
 
+char* doctor_obtener_especialidad(doctor_t* doctor);
+
 //Destruye la estructura doctor liberando la memoria pedida
 //Pre: La estructura doctor fue inicializada
 //Post: La estructura doctor fue destruida
