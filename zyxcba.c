@@ -6,7 +6,7 @@
 #include "mensajes.h"
 #include "doctor.h"
 #include "abb.h"
-#include "especialidades.h"
+#include "especialidad.h"
 #include <stdlib.h>
 
 #define COMANDO_PEDIR_TURNO "PEDIR_TURNO"
