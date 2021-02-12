@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L // strdup
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -11,6 +12,7 @@ typedef struct especialidad{
     heap_t* heap_no_urgentes;
     especialidades_destruir_dato_t destruir_cola;
     especialidades_destruir_dato_t destruir_heap;
+    int pacientes_en_espera;
 }especialidad_t;
 
 typedef void (*especialidades_destruir_dato_t)(void *);
@@ -33,8 +35,13 @@ especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_cola,
     if(!(especialidad->heap_no_urgentes)) return NULL;
     especialidad->destruir_cola = destruir_cola;
     especialidad->destruir_heap = destruir_heap;
+    especialidad->pacientes_en_espera = 0;
     
     return especialidad;
+}
+
+int especialidad_cant_en_espera(especialidad_t* especialidad){
+    return especialidad->pacientes_en_espera;
 }
 
 void especialidad_destruir(especialidad_t* especialidad){
@@ -49,5 +56,17 @@ bool guardar_turno(especialidad_t* especialidad, paciente_t* paciente, bool urge
     }else{
         if(!(heap_encolar(especialidad->heap_no_urgentes, paciente))) return false;
     }
+    especialidad->pacientes_en_espera++;
     return true;
+}
+
+void* atender_paciente(especialidad_t* especialidad){
+    if(!(cola_esta_vacia(especialidad->cola_urgentes))){
+        especialidad->pacientes_en_espera--;
+        return cola_desencolar(especialidad->cola_urgentes);
+    }else if(!(heap_esta_vacio(especialidad->heap_no_urgentes))){
+        especialidad->pacientes_en_espera--;
+        return heap_desencolar(especialidad->heap_no_urgentes);
+    }
+    return NULL;
 }

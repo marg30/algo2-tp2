@@ -13,6 +13,10 @@ typedef void (*especialidades_destruir_dato_t)(void *);
 //Post: la estructura especialidad fue inicializada
 especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_cola, especialidades_destruir_dato_t destruir_heap, cmp_func_t cmp);
 
+//Devuelve la cantidadde pacientes en espera para la especialidad indicada
+//Pre: la estructura especialidad fue inicializada
+int especialidad_cant_en_espera(especialidad_t* especialidad);
+
 //Destruye la estructura especialidad liberando la memoria pedida
 //Pre: La estructura especialidad fue inicializada
 //Post: La estructura especialidad fue destruida
@@ -22,3 +26,7 @@ void especialidad_destruir(especialidad_t* especialidad);
 //Pre: La estructura especialidad fue inicializada
 //Post: El turno solicitado fue guardado
 bool guardar_turno(especialidad_t* especialidad, paciente_t* paciente, bool urgente);
+
+//Devuelve el paciente que este siguiente en la lista de espera y lo saca de la misma. Devuelve NULL si esta vacia.
+//Pre: La estructura especialidad fue inicializada
+void* atender_paciente(especialidad_t* especialidad);

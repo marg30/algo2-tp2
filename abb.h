@@ -1,5 +1,6 @@
 #ifndef ABB_H
 #define ABB_H
+#endif
 
 #include <stdbool.h>
 #include <stddef.h>

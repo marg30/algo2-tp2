@@ -27,9 +27,10 @@ int doctor_ver_atendidos(doctor_t* doctor){
 }
 
 void doctor_destruir(doctor_t* doctor){
+    free(doctor->especialidad);
     free(doctor);
 }
 
 char* doctor_obtener_especialidad(doctor_t *doctor){
-    return (char*) doctor->especialidad;
+    return doctor->especialidad;
 }
