@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L // strdup
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 #include "paciente.h"
 
@@ -22,6 +23,10 @@ paciente_t* paciente_crear(char* nombre, int anio_inscripcion){
     paciente_t* paciente = malloc(sizeof(paciente_t));
     if(!(paciente)) return NULL;
     paciente->nombre = strdup(nombre);
+    if(!paciente->nombre){
+        free(paciente);
+        return NULL;
+    }
     paciente->anio_inscripcion = anio_inscripcion;
     
     return paciente; 
@@ -36,5 +41,6 @@ int paciente_ver_anio_insc(paciente_t* paciente){
 }
 
 void paciente_destruir(paciente_t* paciente){
+    free(paciente->nombre);
     free(paciente);
 }

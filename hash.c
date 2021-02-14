@@ -1,5 +1,5 @@
 #include "testing.h"
-#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -8,11 +8,9 @@
 #define CORRECTOR 
 
 #define FACTOR_DE_CARGA 0.7
-#define TAM_INICIAL 23
 
 // ******************************************************************
 //                        PROGRAMA PRINCIPAL
-
 
 /*Funcion de hashing djb2. Fuente: http://www.cse.yorku.ca/~oz/hash.html*/
 unsigned long f_hash(const char *str){
@@ -24,7 +22,6 @@ unsigned long f_hash(const char *str){
 
     return hash;
 }
-
 
 typedef void (*hash_destruir_dato_t)(void *);
 
@@ -56,13 +53,10 @@ campo_hash_t *crear_tabla_hash(size_t capacidad){
 hash_t *hash_crear(hash_destruir_dato_t destruir_dato){
     hash_t* hash = malloc(sizeof(hash_t));
     if(!(hash)) return NULL;
-    hash->tabla = crear_tabla_hash(TAM_INICIAL);
-    if(!(hash->tabla)){
-        free(hash);
-        return NULL;
-    }
+    hash->tabla = crear_tabla_hash(23);
+    if(!(hash->tabla)) return NULL;
     size_t pos = 0;
-    hash->tam = TAM_INICIAL;
+    hash->tam = 23;
     while(pos < hash->tam){
         hash->tabla[pos].estado = VACIO;
         pos++;
@@ -110,26 +104,36 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato){
     if ((hash->cant)*100 / hash->tam >= FACTOR_DE_CARGA * 100 ){
         if(!redimensionar(hash, hash->tam*2)) return false;
     }
-    char* clave_copia = strdup(clave);
+    size_t tam_clave = strlen(clave) + 1; // Suma 1 porque strlen no cuenta el \0
+    char* clave_copia = malloc(sizeof(char) * tam_clave);
     if(!(clave_copia)) return false;
+    strcpy(clave_copia, clave);
     unsigned long pos = f_hash(clave_copia) % hash->tam;
-    for (size_t i = 0; i < hash->tam; i++){
-        if (hash->tabla[pos].estado != OCUPADO && !(hash_pertenece(hash, clave))){
-            hash->tabla[pos].clave = clave_copia;
-            hash->tabla[pos].dato = dato;
-            hash->tabla[pos].estado = OCUPADO;
-            hash->cant++;
-            return true;
-        }else if (hash->tabla[pos].estado == OCUPADO && strcmp(hash->tabla[pos].clave,clave_copia) == 0){
-            hash_destruir_dato_t destruir_dato = hash->destruir_dato;
-            if (destruir_dato){
-                destruir_dato((hash->tabla[pos].dato));
-            }
-            hash->tabla[pos].dato = dato;
-            free(clave_copia);
-            return true;
+    if (hash->tabla[pos].estado != OCUPADO){
+        hash->tabla[pos].clave = clave_copia;
+        hash->tabla[pos].dato = dato;
+        hash->tabla[pos].estado = OCUPADO;
+        hash->cant++;
+        return true;
+    } else if (hash->tabla[pos].estado == OCUPADO && strcmp(hash->tabla[pos].clave,clave_copia) == 0){
+        hash_destruir_dato_t destruir_dato = hash->destruir_dato;
+        if (destruir_dato){
+            destruir_dato((hash->tabla[pos].dato));
         }
-        pos = (pos + 5 * i) % hash->tam;       
+        hash->tabla[pos].dato = dato;
+        free(clave_copia);
+        return true;
+    } else{
+        for (size_t i = 0; i < hash->tam; i++){
+            pos = (pos + 5 * i) % hash->tam;
+            if (hash->tabla[pos].estado != OCUPADO){
+                hash->tabla[pos].clave = clave_copia;
+                hash->tabla[pos].dato = dato;
+                hash->tabla[pos].estado = OCUPADO;
+                hash->cant++;
+                return true;
+            }
+        }        
     }
     return false;
 }
@@ -142,6 +146,10 @@ void *hash_borrar(hash_t *hash, const char *clave){
         if (hash->tabla[pos].estado == OCUPADO && strcmp(hash->tabla[pos].clave,clave) == 0){
             free(hash->tabla[pos].clave);
             void* dato_borrado = hash->tabla[pos].dato;
+            hash_destruir_dato_t destruir_dato = hash->destruir_dato;
+            if(destruir_dato && dato_borrado){  
+                destruir_dato(hash->tabla[pos].dato);
+            }
             hash->tabla[pos].dato = NULL;
             hash->tabla[pos].estado = BORRADO;
             hash->cant--;
@@ -244,5 +252,6 @@ const char *hash_iter_ver_actual(const hash_iter_t *iter){
     return NULL;
 }
 
-//void hash_iter_destruir(hash_iter_t *iter){
-//    free(iter);
+void hash_iter_destruir(hash_iter_t *iter){
+    free(iter);
+}

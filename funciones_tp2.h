@@ -9,7 +9,7 @@
 bool imprimir_doctor(const char* clave, void* dato, void* extra, void* inicio, void* fin);
 
 
-int calc_distancia(const char* clave, void* dato, void* extra, void* inicio, void* fin);
+bool calc_distancia(const char* clave, void* dato, void* extra, void* inicio, void* fin);
 
 
 size_t largo_array_de_arrays(const char** array);

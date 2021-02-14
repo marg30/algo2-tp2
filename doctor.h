@@ -17,7 +17,7 @@ void doctor_sumar_atendido(doctor_t* doctor);
 
 //Devuelve la cantidad de atendidos del doctor
 //Pre: La estructura doctor fue inicializada
-int doctor_ver_atendidos(doctor_t* doctor);
+size_t doctor_ver_atendidos(doctor_t* doctor);
 
 char* doctor_obtener_especialidad(doctor_t* doctor);
 

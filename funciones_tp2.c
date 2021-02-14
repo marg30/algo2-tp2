@@ -11,41 +11,30 @@
 #include <string.h>
 #include <unistd.h> 
 
-int leer_archivo_doctores(){
-    FILE* archivo = fopen("doctores.csv", "r");
-    if (archivo == -1) {
-        return -1;
-    }
-    procesar_entrada();
-
-}
-
 bool imprimir_doctor(const char* clave, void* dato, void* extra, void* inicio, void* fin) {
-	int* contador = extra;
+	size_t* contador = extra;
 	doctor_t* doc = (doctor_t*) dato;
 	char* especialidad = doctor_obtener_especialidad(doc);
-	int pacientes_atendidos = doctor_ver_atendidos(doc);
+	size_t pacientes_atendidos = doctor_ver_atendidos(doc);
 	if (strlen(inicio) == 0 || strcmp(inicio, clave) <= 0) {
+		if (strlen(fin) != 0 && strcmp(fin, clave) < 0) {
+			return false;
+		}
     	printf(INFORME_DOCTOR, ++(*contador), clave, especialidad, pacientes_atendidos);
 	}
 
-    if (strlen(fin) != 0 && strcmp(fin, clave) == 0) {
-        return false;
-    }
     return true;
 }
 
-int calc_distancia(const char* clave, void* dato, void* extra, void* inicio, void* fin) {
+bool calc_distancia(const char* clave, void* dato, void* extra, void* inicio, void* fin) {
 	int* contador = extra;
 	if (strlen(inicio) == 0 || strcmp(inicio, clave) <= 0) {
+		if (strlen(fin) != 0 && strcmp(fin, clave) < 0) {
+			return false;
+    	}
     	(*contador)++;
 		*(int *) extra = *contador;
 	}
-
-    if (strlen(extra) != 0 && strcmp(fin, clave) == 0) {
-		*contador++;
-        return false;
-    }
 	return true;
 }
 

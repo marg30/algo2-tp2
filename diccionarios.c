@@ -16,6 +16,13 @@ int comparar_pacientes(const void* paciente_1, const void* paciente_2){
 	return cmp_pacientes(paciente_1, paciente_2);
 }
 
+void eliminar_fin_linea(char* linea) {
+	size_t len = strlen(linea);
+	if (linea[len - 1] == '\n') {
+		linea[len - 1] = '\0';
+	}
+}
+
 bool csv_doctores_crear_estructura(const char* ruta_csv, abb_t* doctores, hash_t* especialidades) {
 	FILE* archivo = fopen(ruta_csv, "r");
 	if (!archivo) {
@@ -31,7 +38,7 @@ bool csv_doctores_crear_estructura(const char* ruta_csv, abb_t* doctores, hash_t
         doctor_t* doctor = doctor_crear(campos[1]);
         abb_guardar(doctores, campos[0], doctor);
         if(!(hash_pertenece(especialidades, campos[1]))){
-            especialidad_t* especialidad = especialidad_crear(free, free, comparar_pacientes);
+            especialidad_t* especialidad = especialidad_crear(NULL, NULL, comparar_pacientes);
             hash_guardar(especialidades, campos[1], especialidad);
         }
 		free_strv(campos);
@@ -78,18 +85,18 @@ void doc_destruir(void* doctor){
 	doctor_destruir(doctor);
 }
 
+bool procesar_archivos(const char* ruta_csv_doctores, const char* ruta_csv_pacientes, abb_t* doctores, hash_t* especialidades, hash_t* pacientes){
+	bool archivos_validos = true;
+	if(!(csv_doctores_crear_estructura(ruta_csv_doctores, doctores, especialidades))){
+		archivos_validos = false;
+		printf(ENOENT_ARCHIVO, ruta_csv_doctores);
+	} 
 
-void eliminar_fin_linea(char* linea) {
-	size_t len = strlen(linea);
-	if (linea[len - 1] == '\n') {
-		linea[len - 1] = '\0';
+	if(!(csv_pacientes_crear_estructura(ruta_csv_pacientes, pacientes))) {
+		archivos_validos = false;
+		printf(ENOENT_ARCHIVO, ruta_csv_pacientes);
 	}
-}
-
-void procesar_archivos(const char* ruta_csv_doctores, const char* ruta_csv_pacientes, abb_t* doctores, hash_t* especialidades, hash_t* pacientes){
-	if(!(csv_doctores_crear_estructura(ruta_csv_doctores, doctores, especialidades))) return;
-	if(!(csv_pacientes_crear_estructura(ruta_csv_pacientes, pacientes))) return;
-	return;
+	return archivos_validos;
 }
 
 //A partir de aca esta lo que hice para probar si funcionaba todo bien y sin perder memoria

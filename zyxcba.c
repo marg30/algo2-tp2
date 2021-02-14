@@ -20,7 +20,7 @@
 #define URGENTE "URGENTE"
 #define REGULAR "REGULAR"
 
-bool es_formato_comando(const char** parametros, int cant_correcta){
+bool es_formato_comando(const char** parametros, int cant_correcta, char* comando){
 	if (largo_array_de_arrays(parametros) != cant_correcta) {
 		printf(ENOENT_PARAMS, COMANDO_INFORME);
 		return false;
@@ -49,7 +49,7 @@ bool determinar_urgencia(const char* urgencia){
 	return strcmp(urgencia, URGENTE) == 0;
 }
 
-bool es_doctor(char* clave, abb_t *doctores){
+bool es_doctor(const char* clave, abb_t *doctores){
 	if (strlen(clave) != 0 && !abb_pertenece(doctores, clave)) {
 		printf(ENOENT_DOCTOR, clave);
 		return false;
@@ -65,31 +65,38 @@ bool es_formato_correcto_atender(const char** parametros, abb_t* doctores) {
 
 bool es_formato_correcto_informe_doctores(const char** parametros, abb_t* doctores){
 	bool es_formato_correcto = true;
-	es_formato_correcto = es_doctor(parametros[0], doctores);
-	es_formato_correcto = es_doctor(parametros[1], doctores);
+	if(!es_doctor(parametros[0], doctores)){
+		es_formato_correcto = false;
+	}
+	if(!es_doctor(parametros[1], doctores)){
+		es_formato_correcto = false;
+	}
 	return es_formato_correcto;
 }
 
 void obtener_informe_doctores(const char** parametros, abb_t* doctores){
-	if (!es_formato_comando(parametros, N_PARAM_INFORME) || !es_formato_correcto_informe_doctores(parametros, doctores)) {
+	size_t n_doctores = 0;
+	if (!es_formato_comando(parametros, N_PARAM_INFORME, COMANDO_INFORME)) {
 		return;
 	}
-	size_t n_doctores = 0;
-	abb_in_order(doctores, calc_distancia, &n_doctores, parametros[0], parametros[1]);
+	if(abb_cantidad(doctores) == 0) {
+		printf(DOCTORES_SISTEMA, n_doctores);
+		return;
+	}
+	abb_in_order(doctores, calc_distancia, &n_doctores, (void*) parametros[0], (void*) parametros[1]);
 	printf(DOCTORES_SISTEMA, n_doctores);
 	size_t contador = 0;
-	void* extra = &contador;
-	abb_in_order(doctores, imprimir_doctor, &contador, parametros[0], parametros[1]);
+	abb_in_order(doctores, imprimir_doctor, &contador, (void*) parametros[0], (void*) parametros[1]);
 }
 
 void pedir_turno(const char** parametros, hash_t *especialidades, hash_t *pacientes){
-	if (!es_formato_comando(parametros, N_PARAM_TURNO) || !es_formato_correcto_pedir_turno(parametros, especialidades, pacientes)) {
+	if (!es_formato_comando(parametros, N_PARAM_TURNO, COMANDO_PEDIR_TURNO) || !es_formato_correcto_pedir_turno(parametros, especialidades, pacientes)) {
 		return;
 	} 
 
-	char* nombre_paciente = parametros[0];
-	char* nombre_esp = parametros[1];
-	char* urgencia = parametros[2];
+	const char* nombre_paciente = parametros[0];
+	const char* nombre_esp = parametros[1];
+	const char* urgencia = parametros[2];
 
 	especialidad_t *especialidad = hash_obtener(especialidades, nombre_esp);
 	paciente_t *paciente = hash_obtener(pacientes, nombre_paciente);
@@ -101,7 +108,7 @@ void pedir_turno(const char** parametros, hash_t *especialidades, hash_t *pacien
 }
 
 void cmd_atender_paciente(const char** parametros, abb_t *doctores, hash_t *especialidades){
-	if (!es_formato_comando(parametros, N_PARAM_ATENDER) || !es_formato_correcto_atender(parametros, doctores)) {
+	if (!es_formato_comando(parametros, N_PARAM_ATENDER, COMANDO_ATENDER) || !es_formato_correcto_atender(parametros, doctores)) {
 		return;
 	}
 	doctor_t *doctor = abb_obtener(doctores, parametros[0]);
@@ -112,7 +119,7 @@ void cmd_atender_paciente(const char** parametros, abb_t *doctores, hash_t *espe
 		printf(SIN_PACIENTES);
 	}
 	else {
-		//printf(PACIENTE_ATENDIDO, (char*) paciente_obtener_nombre(paciente));
+		printf(PACIENTE_ATENDIDO, (char*) paciente_obtener_nombre(paciente));
 		printf(CANT_PACIENTES_ENCOLADOS, especialidad_cant_en_espera(esp), nombre_esp);
 		doctor_sumar_atendido(doctor);
 	}
@@ -134,10 +141,14 @@ void procesar_comando(const char* comando, const char** parametros, abb_t *docto
 	}
 }
 
-void procesar_entrada(abb_t *doctores, hash_t *especialidades, hash_t *pacientes) {
+void procesar_entrada(char** argv) {
 	char* linea = NULL;
 	size_t c = 0;
-	procesar_archivos("doctores.csv", "pacientes.csv", doctores, especialidades, pacientes);
+	abb_t *doctores = abb_crear(strcmp, doctor_destruir);
+	hash_t *especialidades = hash_crear(especialidad_destruir);
+	hash_t *pacientes = hash_crear(paciente_destruir);
+	if(!procesar_archivos(argv[1], argv[2], doctores, especialidades, pacientes)) return;
+	
 	while (getline(&linea, &c, stdin) > 0) {
 		eliminar_fin_linea(linea);
 		char** campos = split(linea, ':');
@@ -147,22 +158,24 @@ void procesar_entrada(abb_t *doctores, hash_t *especialidades, hash_t *pacientes
 			continue;	
 		}
 		char** parametros = split(campos[1], ',');
-		procesar_comando(campos[0], parametros, doctores, especialidades, pacientes);
+		procesar_comando(campos[0], (const char**) parametros, doctores, especialidades, pacientes);
 		free_strv(parametros);
 		free_strv(campos);
 	}
 	free(linea);
+	abb_destruir(doctores);
+	hash_destruir(especialidades);
+	hash_destruir(pacientes);
 }
 
 
 
 int main(int argc, char** argv) {
-	abb_t *doctores = abb_crear(strcmp, free);
-	hash_t *especialidades = hash_crear(free);
-	hash_t *pacientes = hash_crear(free);
-	procesar_entrada(doctores, especialidades, pacientes);
-	abb_destruir(doctores);
-	hash_destruir(especialidades);
-	hash_destruir(pacientes);
+	if (argc != 3) {
+        printf(ENOENT_CANT_PARAMS);
+        return 1;
+    }
+
+	procesar_entrada(argv);
 	return 0;
 }

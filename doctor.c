@@ -7,12 +7,20 @@
 
 typedef struct doctor{
     char* especialidad;
-    int pacientes_atendidos;
+    size_t pacientes_atendidos;
 }doctor_t;
 
 doctor_t* doctor_crear(char* especialidad){
     doctor_t* doctor = malloc(sizeof(doctor_t));
+    if(!doctor){
+        free(doctor);
+        return NULL;
+    }
     doctor->especialidad = strdup(especialidad);
+    if(!doctor->especialidad){
+        free(doctor->especialidad);
+        return NULL;
+    }
     doctor->pacientes_atendidos = 0;
 
     return doctor;
@@ -22,7 +30,7 @@ void doctor_sumar_atendido(doctor_t* doctor){
     doctor->pacientes_atendidos++;
 }
 
-int doctor_ver_atendidos(doctor_t* doctor){
+size_t doctor_ver_atendidos(doctor_t* doctor){
     return doctor->pacientes_atendidos;
 }
 

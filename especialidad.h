@@ -15,7 +15,7 @@ especialidad_t* especialidad_crear(especialidades_destruir_dato_t destruir_cola,
 
 //Devuelve la cantidadde pacientes en espera para la especialidad indicada
 //Pre: la estructura especialidad fue inicializada
-int especialidad_cant_en_espera(especialidad_t* especialidad);
+size_t especialidad_cant_en_espera(especialidad_t* especialidad);
 
 //Destruye la estructura especialidad liberando la memoria pedida
 //Pre: La estructura especialidad fue inicializada
